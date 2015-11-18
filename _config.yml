@@ -12,7 +12,7 @@ timezone:
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://anius.io
+url: http://animatious.github.io
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -65,7 +65,19 @@ pagination_dir: page
 ## Themes: http://hexo.io/themes/
 theme: hueman
 
+
+plugins:
+
+
 # Deployment
 ## Docs: http://hexo.io/docs/deployment.html
 deploy:
-  type:
+  type: git
+  repository: https://github.com/Animatious/animatious.github.io.git
+  branch: master
+
+feed:
+  type: atom
+  path: atom.xml
+  limit: 0
+  hub:

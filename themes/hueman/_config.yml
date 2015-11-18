@@ -1,7 +1,7 @@
 # Logo Url
 # Please enter an absolute path to your logo file
 # or remove the following line with replacing logo-header.png with your own logo
-logo:
+# logo:
 
 # Header
 menu:
@@ -25,12 +25,12 @@ scrollLoading: true
 # Sidebar
 sidebar: left # sidebar's position (left or right)
 social_links:
-  twitter:
-  facebook:
-  google-plus:
-  github: https://github.com/ppoffice/hexo-theme-hueman
-  weibo:
-  rss:
+  #twitter:
+  #facebook:
+  #google-plus: 
+  github: https://github.com/Animatious
+  weibo: http://weibo.com/u/5760273536
+  rss: /atom.xml
 widgets:
 - recent_posts
 - category
@@ -41,7 +41,7 @@ widgets:
 
 # Links
 links:
-  Hexo: http://hexo.io
+  Hexo: http://anius.io/
 
 # Don't Use Google APIs if you are in google-blocked areas
 use_google_apis: false
