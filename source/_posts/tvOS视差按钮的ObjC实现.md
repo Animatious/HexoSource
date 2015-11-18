@@ -4,11 +4,12 @@ tags:
 - tvOS 
 - ObjC
 categories:
-- ObjC
+- 代码
 
 ---
 
  
+![](/img/2015/11/tvOS/tvOSButtonPic_thumb.jpg)
 # 介绍
 苹果在最新发布的Apple TV里引入了有趣的[图标设计][1]  
 具体说来 图标由2-5个分层图层构成 在图标被选中的时候 图标内每个图层进行不同幅度的位移 从而形成视觉上具有深度距离感的视差效果 图标构成和效果可以见视频:  
@@ -50,12 +51,12 @@ CATransform3D CATransform3DMakeRotation (
 如果只有总图层自转 分图层不进行移动 那么整个按钮虽然有自转效果 但是看起来还是平的  
 如果要保证有三维效果 就要有视差 即近大远小 让**远处的图层移动的距离很小 近处的图层移动距离很大**（大家可以自行想象同样速度远处近处的汽车 看起来移动的距离也不一样）  
 因此 就要令分图层进行圆周移动 离我们近的图层 圆周半径要更大些 保证看起来移动的距离更大  
-我们简单地用 Principle 做了一个原型 大体效果应该是这个样子的 中间的圆点是移动的轴心  
+我们简单地用 Principle 做了一个[原型](/files/2015/11/tvOS/tvOS_Principle_1.prd) 大体效果应该是这个样子的 中间的圆点是移动的轴心  
 ![简陋的圆周移动效果][image-4]
 ### 3.总的图层也会移动
 看到我们刚才那个简陋的效果了没？你有可能会想 为什么看起来和tvOS差别那么大？  
 原因是 tvOS实现的效果 整个按钮并没有明显地移动 而是近似于固定在某个位置的 这么一来 就要求我们在分图层移动的时候 总图层叠加一项反方向的移动 保证按钮固定住  
-于是我们又用 Principle 做了一个原型 大体效果应该是这个样子的  
+于是我们又用 Principle 做了一个[原型](/files/2015/11/tvOS/tvOS_Principle_2.prd) 大体效果应该是这个样子的  
 ![还是很简陋的圆周移动效果][image-5]  
 
 ### 4.高光的移动方向恰好相反  
@@ -364,6 +365,7 @@ return CATransform3DConcat(t, CATransform3DMakePerspective(center, disZ));
     
 }
 
+//计时器每次触发要执行的方法
 - (void)RotationCreator
 {
     __weak JZParallaxButton *weakSelf = self;
@@ -452,16 +454,78 @@ return CATransform3DConcat(t, CATransform3DMakePerspective(center, disZ));
             break;
     }
 }
-
+- (float)InScaleParameterWithLayerArray:(NSMutableArray *)Array
+                                    WithIndex:(int)i
+{
+    
+    switch (ParallaxMethod)
+    {
+        case Linear:
+            return 1+ScaleAddition/10*((float)i/(float)([LayerArray count]));
+            break;
+            
+        case EaseIn:
+            return 1+ScaleAddition/10*powf(((float)i/(float)([LayerArray count])), 0.5f);
+            break;
+            
+        case EaseOut:
+            return 1+ScaleAddition/10*powf(((float)i/(float)([LayerArray count])), 2.0f);
+            break;
+            
+        default:
+            return 1+ScaleAddition/10*((float)i/(float)([LayerArray count]));
+            break;
+    }
+}
 @end
 
+```
+
+### 4.实现手动动画
 ```  
+//手动动画和自动动画的区别是 移动的角度不再跟进计数器计算 而是直接读取手指的CGPoint
+__weak JZParallaxButton *weakSelf = self;
+    CGFloat XOffest;
+    if (TouchPointInSelf.x < 0)
+    {
+        XOffest = - weakSelf.frame.size.width / 2;
+    }else if (TouchPointInSelf.x > weakSelf.frame.size.width)
+    {
+        XOffest = weakSelf.frame.size.width / 2;
+    }else
+    {
+        XOffest = TouchPointInSelf.x - weakSelf.frame.size.width / 2;
+    }
+    
+    CGFloat YOffest;
+    if (TouchPointInSelf.y < 0)
+    {
+        YOffest = - weakSelf.frame.size.height / 2;
+    }else if (TouchPointInSelf.y > weakSelf.frame.size.height)
+    {
+        YOffest = weakSelf.frame.size.height / 2;
+    }else
+    {
+        YOffest = TouchPointInSelf.y - weakSelf.frame.size.height / 2;
+    }
+    
+    //NSLog(@"XOffest : %f , YOffest : %f",XOffest,YOffest);
+    
+    CGFloat XDegress = XOffest / weakSelf.frame.size.width / 2;
+    CGFloat YDegress = YOffest / weakSelf.frame.size.height / 2;
+    
+    //NSLog(@"XDegress : %f , YDegress : %f",XDegress,YDegress);
+
+```
+# 资源  
+配图所用Sketch文件：[下载链接](/files/2015/11/tvOS/tvOS_Sketch.sketch)
+
 
 [1]:	https://developer.apple.com/tvos/human-interface-guidelines/icons-and-images/
-[2]:	/files/2015/11/tvOS-Gear.zip
+[2]:	/files/2015/11/tvOS/tvOS-Gear.zip
 
-[image-1]:	/img/2015/11/tvOSButtonPic_1.jpg
-[image-2]:	/img/2015/11/tvOSButtonPic_2.jpg
-[image-3]:	/img/2015/11/tvOSButtonPic_3.jpg
-[image-4]:	/img/2015/11/tvOSButtonGif_1.gif
-[image-5]:	/img/2015/11/tvOSButtonGif_2.gif
+[image-1]:	/img/2015/11/tvOS/tvOSButtonPic_1.jpg
+[image-2]:	/img/2015/11/tvOS/tvOSButtonPic_2.jpg
+[image-3]:	/img/2015/11/tvOS/tvOSButtonPic_3.jpg
+[image-4]:	/img/2015/11/tvOS/tvOSButtonGif_1.gif
+[image-5]:	/img/2015/11/tvOS/tvOSButtonGif_2.gif
