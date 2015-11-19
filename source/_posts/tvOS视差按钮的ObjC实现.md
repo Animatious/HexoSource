@@ -77,9 +77,9 @@ CATransform3D CATransform3DMakeRotation (
 
 typedef NS_ENUM(NSInteger, RotateMethodType)
 {
-	AutoRotate = 0, //自动动画
-	WithFinger, //跟随手指
-	WithFingerReverse, //跟随手指 但反向
+	RotateMethodTypeAutoRotate = 0, //自动动画
+	RotateMethodTypeWithFinger, //跟随手指
+	RotateMethodTypeWithFingerReverse, //跟随手指 但反向
 };
 @interface JZParallaxButton : UIButton
 @end
@@ -154,9 +154,9 @@ ParallaxButton:UIButton  //我们建立的UIButton SubClass
 
 typedef NS_ENUM(NSInteger, ParallaxMethodType)
 {
-	Linear = 0,
-	EaseIn,
-	EaseOut,
+	ParallaxMethodTypeLinear = 0,
+	ParallaxMethodTypeEaseIn,
+	ParallaxMethodTypeEaseOut,
 };
 
 @interface JZParallaxButton : UIButton
@@ -280,7 +280,7 @@ typedef NS_ENUM(NSInteger, ParallaxMethodType)
 	
 	    switch (self.RotateMethod)
 	    {
-	        case AutoRotate:
+	        case RotateMethodTypeAutoRotate:
 	        {
 	        //长按后 如果在进行视差效果就结束 如果现在是普通状态就开启视差效果
 	            if (isParallax)
@@ -294,7 +294,7 @@ typedef NS_ENUM(NSInteger, ParallaxMethodType)
 	        }
 	            break;
 	
-	        case WithFinger:
+	        case RotateMethodTypeWithFinger:
 	        {
 	        //手动动画结束视差效果并不依靠长按 而是通过判断手指是否留在屏幕上
 	            if (!isParallax)
@@ -358,7 +358,7 @@ return CATransform3DConcat(t, CATransform3DMakePerspective(center, disZ));
 ### 4.实现自动动画  
 这部分主要内容就是 在长按后 按钮会先进入某个特定的角度位置 然后进行自转  
 这里为了简单 使用了NSTimer进行每一帧的计数 但需要注意的是 NSTimer的精度不足以完成真正流畅的动画  
-自动动画里 总图层和分图层的移动 旋转都和两个参数有关：一是当前的计数位置（即） 而是图层在总按钮里的层级位置(即LayerArray里的i) 通过这两个参数进行计算CATransform3D
+自动动画里 总图层和分图层的移动 旋转都和两个参数有关：一是当前的计数位置（即Step） 而是图层在总按钮里的层级位置(即LayerArray里的i) 通过这两个参数进行计算CATransform3D
 ```
 //  JZParallaxButton.m
 
@@ -528,15 +528,15 @@ return CATransform3DConcat(t, CATransform3DMakePerspective(center, disZ));
     switch (ParallaxMethod)
     {
     	//移动半径和图层层级成线性关系
-        case Linear:
+        case ParallaxMethodTypeLinear:
             return (float)(i)/(float)([Array count]);
             break;
         //移动半径和图层层级成二次关系
-        case EaseIn:
+        case ParallaxMethodTypeEaseIn:
             return powf((float)(i)/(float)([Array count]), 0.5f);
             break;
     	//移动半径和图层层级成根号关系
-        case EaseOut:
+        case ParallaxMethodTypeEaseOut:
             return powf((float)(i)/(float)([Array count]), 2.0f);
             break;
             
@@ -552,15 +552,15 @@ return CATransform3DConcat(t, CATransform3DMakePerspective(center, disZ));
     switch (ParallaxMethod)
     {
     //缩放与图层层级的不同关系
-        case Linear:
+        case ParallaxMethodTypeLinear:
             return 1+ScaleAddition/10*((float)i/(float)([LayerArray count]));
             break;
             
-        case EaseIn:
+        case ParallaxMethodTypeEaseIn:
             return 1+ScaleAddition/10*powf(((float)i/(float)([LayerArray count])), 0.5f);
             break;
             
-        case EaseOut:
+        case ParallaxMethodTypeEaseOut:
             return 1+ScaleAddition/10*powf(((float)i/(float)([LayerArray count])), 2.0f);
             break;
             
