@@ -125,8 +125,29 @@ typedef NS_ENUM(NSInteger, RotateMethodType)
 	//可以读取当前按下的位置
 }
 ```
-### 2.逻辑判断
-
+### 2.层级关系和逻辑判断
+我们的按钮在实现后应有以下层级：
+![层级关系](/img/2015/11/tvOS/tvOSButtonPic_4.jpg)
+```
+ParallaxButton:UIButton  //我们建立的UIButton SubClass
+|-BoundsView:UIView   //总视图 
+  |--LayerImageView1:UIImageView //分视图 是总视图的SubView
+  |--LayerImageView2:UIImageView
+  |--LayerImageView3:UIImageView
+  |--LayerImageView4:UIImageView
+  |--LayerImageView5:UIImageView
+  |-- .... 
+  |--LayerImageViewX:UIImageView
+```
+有的同学有可能会觉得 为什么需要总视图这个 `BoundsView` 呢 直接将所有的UIImageView都划归为UIButton的SubView不就好了么？  
+实验过直接将UIImageView添加到UIButton为SubView后 我有一个相对合理的解释：  
+我们之前分析原理的时候 说明其实是只有总图层（即 `BoundsView` ）在旋转的 分图层只需处理移动问题  
+如果去除了总图层 就只能让每个分图层（即 `LayerImageView` ）在移动的同时都旋转 这势必带来一个问题 那就是会有“厚度”的感觉   
+让我们实验下 如果层级关系如下图 会是什么结果
+![错误的显示效果](/img/2015/11/tvOS/tvOSButtonGif_3.gif)  
+可以看到 这里的图层移动方式和原型里的效果已经很接近了 但是因为分图层移动半径不一 并且没有总图层进行约束 导致分图层的显示区域不在一个长方形里 看起来像是有厚度了一样 整个按钮实际看起来并没有tvOS按钮里的那种轻盈感  
+因此 需要有总图层进行约束 即将分图层添加为总图层的SubView 并设置总图层Layer的MasksToBounds为YES 这时 所有分图层的可见区域都受限制于总图层 无论怎么旋转和移动都不会出现厚度感了  
+我们现在将视图层级需要的一些变量写出来 然后再实现一些逻辑判断的代码 比如长按后需要做什么  
 ```
 //JZParallaxButton.h
 # import <UIKit/UIKit.h>
@@ -140,7 +161,7 @@ typedef NS_ENUM(NSInteger, ParallaxMethodType)
 
 @interface JZParallaxButton : UIButton
 
-//当前Button包含的所有ImageLayer
+//数组用于记录当前Button包含的所有ImageLayer 即分图层
 @property (nonatomic,strong) NSMutableArray *LayerArray;
 
 //button圆角
@@ -192,6 +213,60 @@ typedef NS_ENUM(NSInteger, ParallaxMethodType)
 
 @implementation JZParallaxButton
 //省略 @synthesize ...
+
+- (instancetype)initButtonWithCGRect:(CGRect)RectInfo
+                      WithLayerArray:(NSMutableArray *)ArrayOfLayer
+              WithRoundCornerEnabled:(BOOL)isRoundCorner
+           WithCornerRadiusifEnabled:(CGFloat)Radius
+                  WithRotationFrames:(int)Frames
+                WithRotationInterval:(CGFloat)Interval
+{
+//省略之前的代码....
+	LayerArray = [[NSMutableArray alloc] initWithCapacity:[ArrayOfLayer count]];
+    
+    BoundsView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
+    BoundsView.layer.masksToBounds = YES;
+    BoundsView.layer.shouldRasterize = TRUE;
+    BoundsView.layer.rasterizationScale = [[UIScreen mainScreen] scale];
+    if (self.RoundCornerEnabled)
+    {
+        BoundsView.layer.cornerRadius = self.RoundCornerRadius;
+    }
+    [self addSubview:BoundsView];
+    
+    
+    for (int i = 0; i < [ArrayOfLayer count]; i++)
+    {
+        UIImageView *LayerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
+        UIImage *LayerImage = [ArrayOfLayer objectAtIndex:i];
+        [LayerImageView setImage:LayerImage];
+        LayerImageView.layer.shouldRasterize = TRUE;
+        LayerImageView.layer.rasterizationScale = [[UIScreen mainScreen] scale];
+        
+        //从下往上添加
+        [BoundsView addSubview:LayerImageView];
+        [LayerArray addObject:LayerImageView];
+        
+        //如果把所有分图层都加完了
+        if (i == [ArrayOfLayer count] - 1)
+        {
+            //在最上层添加高光分图层
+            SpotLightView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width,self.frame.size.height)];
+            
+            NSString *bundlePath = [[NSBundle bundleForClass:[JZParallaxButton class]]
+                                    pathForResource:@"JZParallaxButton" ofType:@"bundle"];
+            NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+            
+            SpotLightView.image = [UIImage imageNamed:@"Spotlight" inBundle:bundle compatibleWithTraitCollection:nil];
+            SpotLightView.contentMode = UIViewContentModeScaleAspectFit;
+            SpotLightView.layer.masksToBounds = YES;
+            [BoundsView addSubview:SpotLightView];
+            SpotLightView.layer.zPosition = zPositionMax;
+            [self bringSubviewToFront:SpotLightView];
+            SpotLightView.alpha = 0.0;
+            [LayerArray addObject:SpotLightView];
+        }
+}              
 - (void)selfLongPressed:(UILongPressGestureRecognizer *)sender
 {
 	CGPoint PressedPoint = [sender locationInView:self];
@@ -247,6 +322,19 @@ typedef NS_ENUM(NSInteger, ParallaxMethodType)
 @end
 
 ```
+这里的 `shouldRasterize` ：
+```
+@property BOOL shouldRasterize
+Description	A Boolean that indicates whether the layer is rendered as a bitmap before compositing. Animatable
+```
+在某些时候 例如导入的图片分辨率较大 此时对UIViewImage进行CA动画 会出现锯齿 这个时候 可以通过设置 `shouldRasterize` 来解决
+```
+BoundsView.layer.shouldRasterize = YES;
+BoundsView.layer.rasterizationScale = [[UIScreen mainScreen] scale];
+```
+当然设置 `allowsEdgeAntialiasing` 也是一种方法 这里我们对比下 可以注意看右边墙壁上的树影 通过 `shouldRasterize` 设置后 基本上影子不会出现较大的变动：
+![两种抗锯齿的对比](/img/2015/11/tvOS/tvOSButtonGif_4.gif)
+
 
 ### 3.透视效果需要实现的一个方法  
 ```
@@ -267,7 +355,10 @@ CATransform3D CATransform3DPerspect(CATransform3D t, CGPoint center, float disZ)
 return CATransform3DConcat(t, CATransform3DMakePerspective(center, disZ));
 }
 ```
-### 4.实现自动动画
+### 4.实现自动动画  
+这部分主要内容就是 在长按后 按钮会先进入某个特定的角度位置 然后进行自转  
+这里为了简单 使用了NSTimer进行每一帧的计数 但需要注意的是 NSTimer的精度不足以完成真正流畅的动画  
+自动动画里 总图层和分图层的移动 旋转都和两个参数有关：一是当前的计数位置（即） 而是图层在总按钮里的层级位置(即LayerArray里的i) 通过这两个参数进行计算CATransform3D
 ```
 //  JZParallaxButton.m
 
@@ -436,15 +527,15 @@ return CATransform3DConcat(t, CATransform3DMakePerspective(center, disZ));
 
     switch (ParallaxMethod)
     {
-    	//半径和图层层级成线性关系
+    	//移动半径和图层层级成线性关系
         case Linear:
             return (float)(i)/(float)([Array count]);
             break;
-        //半径和图层层级成二次关系
+        //移动半径和图层层级成二次关系
         case EaseIn:
             return powf((float)(i)/(float)([Array count]), 0.5f);
             break;
-    	//半径和图层层级成根号关系
+    	//移动半径和图层层级成根号关系
         case EaseOut:
             return powf((float)(i)/(float)([Array count]), 2.0f);
             break;
@@ -460,6 +551,7 @@ return CATransform3DConcat(t, CATransform3DMakePerspective(center, disZ));
     
     switch (ParallaxMethod)
     {
+    //缩放与图层层级的不同关系
         case Linear:
             return 1+ScaleAddition/10*((float)i/(float)([LayerArray count]));
             break;
@@ -517,9 +609,16 @@ __weak JZParallaxButton *weakSelf = self;
     //NSLog(@"XDegress : %f , YDegress : %f",XDegress,YDegress);
 
 ```
-# 资源  
-配图所用Sketch文件：[下载链接](/files/2015/11/tvOS/tvOS_Sketch.sketch)
+# 效果  
+此时还有很多方法没有实现（比如动画结束后需要变回原有的非三维效果） 不过大体上已经可以看到效果了 你也可以直接将完成版的[视差按钮下载下来](https://github.com/JustinFincher/JZtvOSParallaxButton)    
+Have Fun :-)
+# 其他资源  
+如果你对真正三维状态下的按钮还是不太理解 可以点击下面的播放按钮自由查看这个三维模型 点击播放按钮后 通过三维场景右下角的左右切换查看按钮的不同旋转状态 或者点击数字1-5来快速跳转  
+<iframe width="640" height="480" src="https://sketchfab.com/models/899bdd009cc64af0b2260fe7570a0510/embed" frameborder="0" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" onmousewheel=""></iframe>
 
+以外 这篇文章里所有文件都是提供公共下载的   
+配图所用Sketch文件：[下载链接](/files/2015/11/tvOS/tvOS_Sketch.sketch)
+三维模型文件（进入点击Download）：[下载链接](https://sketchfab.com/models/899bdd009cc64af0b2260fe7570a0510)
 
 [1]:	https://developer.apple.com/tvos/human-interface-guidelines/icons-and-images/
 [2]:	/files/2015/11/tvOS/tvOS-Gear.zip
