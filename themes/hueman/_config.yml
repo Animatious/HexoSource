@@ -8,6 +8,7 @@ menu:
   Home: /
   # Delete this row if you don't want categories in your header nav bar
   Categories:
+  Portfolio: /portfolio/index.html
   About: /about/index.html
 
 # Article list grouped by year
