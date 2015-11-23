@@ -327,7 +327,7 @@ typedef NS_ENUM(NSInteger, ParallaxMethodType)
 @property BOOL shouldRasterize
 Description	A Boolean that indicates whether the layer is rendered as a bitmap before compositing. Animatable
 ```
-在某些时候 例如导入的图片分辨率较大 此时对UIViewImage进行CA动画 会出现锯齿 这个时候 可以通过设置 `shouldRasterize` 来解决
+在某些时候 例如导入的图片分辨率较大 此时对UIImageView进行CA动画 会出现锯齿 这个时候 可以通过设置 `shouldRasterize` 来解决
 ```
 BoundsView.layer.shouldRasterize = YES;
 BoundsView.layer.rasterizationScale = [[UIScreen mainScreen] scale];

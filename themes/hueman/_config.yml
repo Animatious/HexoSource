@@ -41,7 +41,7 @@ widgets:
 
 # Links
 links:
-  Hexo: http://anius.io/
+  # Hexo: http://anius.io/
 
 # Don't Use Google APIs if you are in google-blocked areas
 use_google_apis: false
