@@ -8,24 +8,24 @@ categories:
 
 ---
 
-## 介绍这个创意其实来源于微博上@画渣程序猿mmoaay转发并艾特我的的一组gif图  
+# 介绍这个创意其实来源于微博上@画渣程序猿mmoaay转发并艾特我的的一组gif图  
 看到图的时候 我先对图大致进行了结构和层次的区分在设计物体动效的时候，首先是要对动画的不同对象进行拆分，在这里，老鼠，猫眼睛，眼皮，以及猫脸，他们各自的行为分别是不同的，因此分为不同的图层 
 
 ![](/img/2015/11/SCCatWaitingHUD/pic1.jpg)
- 在整体动画进行的时候，他们各自的layer所执行的动画是不同的  看起来这个控件很简单，接下来我们就来分析一下写出这样一个控件需要注意的关键点吧~## 分析先确认我们要做成什么样的控件  
-### 首先 这是一个等待动画 所以应该做成一个HUD类型的控件  
+ 在整体动画进行的时候，他们各自的layer所执行的动画是不同的  看起来这个控件很简单，接下来我们就来分析一下写出这样一个控件需要注意的关键点吧~# 分析先确认我们要做成什么样的控件  
+## 首先 这是一个等待动画 所以应该做成一个HUD类型的控件  
 这样可以在当前window的上方出现和消失而不影响当前视图的展示  
 所以我们就要在应用当前默认的UIWindow上再添加一个UIWindow 这样可以在全局任何地方调用这个HUD 同时我们的HUD也要实现全局的单例模式  
-### 其次是动画 最初的动画其实并不难  
+## 其次是动画 最初的动画其实并不难  
 只是眼睛图层和老鼠图层围着各自的中心点旋转 且拥有相同的运动周期 这样能让他们在相同时间内移动的弧度是相同的 产生眼睛跟着老鼠走的感觉
 
 ![](/img/2015/11/SCCatWaitingHUD/circle.png)
   
-### 最后是眼皮和眼珠的运动协调  
+## 最后是眼皮和眼珠的运动协调  
 由于眼珠做的是匀速圆周运动 而眼皮做的是直线缩放运动 因此如何协调这两者的运动时间曲线 决定了最后的动画是否流畅和自然  
 ### 还有一点额外的临时产生的需求就是对横屏的支持  
-这是我在写的过程中@sauchye提出的issue，所以我花了一个版本用来加上了对左右横屏的支持## 代码实现
-### UIWindow
+这是我在写的过程中@sauchye提出的issue，所以我花了一个版本用来加上了对左右横屏的支持# 代码实现
+## UIWindow
 
 UIWindow 是每一个程序都必须创建的根视图，它是UIView的子类，但是地位却在所有的UIView之上。每一个程序在启动的时候，如果你使用了interface builder作为启动界面，那么Xcode会自动把你的第一个Controller添加到根window上，如果你要通过代码初始化Window，则必须要像系统要求的这样声明：
 
@@ -59,7 +59,7 @@ _backgroundWindow.alpha = 0.0f;```
 - (void)makeKeyWindow;
 - (void)makeKeyAndVisible;                             // convenience. most apps call this to show the main window and also make it key. otherwise use view hidden property```
 一般都是用上述第二个方法来让指定Window成为keyWindow并且出现。至于怎么让指定Window消失，苹果并没有提供一些特别的办法，官方文档中有给出下面这种用法
-```_backgroundWindow.hidden = YES;// According to Apple Doc : This is a convenience method to make the receiver the main window and displays it in front of other windows at the same window level or lower. You can also hide and reveal a window using the inherited hidden property of UIView.```### Animation
+```_backgroundWindow.hidden = YES;// According to Apple Doc : This is a convenience method to make the receiver the main window and displays it in front of other windows at the same window level or lower. You can also hide and reveal a window using the inherited hidden property of UIView.```## Animation
 动画要解决的第一个问题就是，**老鼠的旋转是绕着自身的中心点，然而两个眼珠的旋转并不是**。  首先，旋转动画的实现我们肯定是通过`CATransform3DRotate`，基本的CAAnimation声明如下:
 
 ```
@@ -101,7 +101,7 @@ _rightEye.layer.position = CGPointMake(self.faceView.right - 13.5f, self.faceVie
 
 这时候，上面的`CAAnimation`就可以正常的添加到Layer的transform上并且执行出来啦。
 
-### 眼皮的运动时间曲线
+## 眼皮的运动时间曲线
 
 这里最重要的一点就是要让眼皮和眼珠的运动达到协调一致，不会出现翻白眼也不会出现斗鸡眼（哈哈哈哈）。所以我们可以先分析出下面两个结论:
 
@@ -129,7 +129,7 @@ _rightEye.layer.position = CGPointMake(self.faceView.right - 13.5f, self.faceVie
 这个函数的图像如下
 ![](/img/2015/11/SCCatWaitingHUD/Sy.jpg)
 
-这时候，这个函数图像就是接下来要给眼皮加上的缩放动画的时间曲线了，我没有用专门的画贝塞尔曲线的软件来画，只是根据函数的图像大致画出了一个贝塞尔曲线，作为了下面这个动画的时间曲线
+注意，我们得出这个函数图像的主要目标是确定眼皮的上下缩放动画的时间曲线，这个曲线代表着位移和时间的函数关系。这时候，这个函数图像就是接下来要给眼皮加上的缩放动画的时间曲线了，我没有用专门的画贝塞尔曲线的软件来画，只是根据函数的图像大致画出了一个贝塞尔曲线，作为了下面这个动画的时间曲线
 
 ```
 - (CAAnimationGroup *)scaleAnimation
@@ -162,5 +162,31 @@ _rightEye.layer.position = CGPointMake(self.faceView.right - 13.5f, self.faceVie
 }
 ```
 
+你可以看到`CAMediaTimingFunction`，这就是时间曲线的类，在一般情况下，系统会提供这么几种你常用到的时间曲线
 
+```
+CA_EXTERN NSString * const kCAMediaTimingFunctionLinear
+    __OSX_AVAILABLE_STARTING (__MAC_10_5, __IPHONE_2_0);
+CA_EXTERN NSString * const kCAMediaTimingFunctionEaseIn
+    __OSX_AVAILABLE_STARTING (__MAC_10_5, __IPHONE_2_0);
+CA_EXTERN NSString * const kCAMediaTimingFunctionEaseOut
+    __OSX_AVAILABLE_STARTING (__MAC_10_5, __IPHONE_2_0);
+CA_EXTERN NSString * const kCAMediaTimingFunctionEaseInEaseOut
+    __OSX_AVAILABLE_STARTING (__MAC_10_5, __IPHONE_2_0);
+```
 
+他们分别代表了匀速运动，先快后慢，先慢后快，先快后慢再快这四种运动时间曲线。如果你要自定义时间曲线的话，系统也提供了绘制贝塞尔曲线的方法，你只要确定曲线的两个控制点坐标即可。而坐标的原点为(0，0)，最后收尾的点则在(1,1)，横轴为时间，纵轴为动画的执行程度，坐标值代表着相对比例值，因此我们可以截取上面的函数图像中横轴0到π的部分作为0到1的时间长度，来绘制贝塞尔曲线。
+
+## 最后是一点对横屏的支持
+
+由于我们实现的是一个独立的UIWindow，所以不能通过controller的几个涉及到屏幕旋转的回调来获得屏幕方向的变化。屏幕方向的旋转只会自动这时候我们就要通过监听系统的一个广播消息来获取屏幕状态的变化。
+
+```
+[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusBarOrientationChange:)  name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
+
+```
+
+在横屏切换的回调里，我记录了前一个屏幕状态，获取到当前屏幕状态，然后做了一个旋转的变换，这样整个HUD就会随着屏幕方向的变化而变化了。详细的实现可以直接看源代码，这里就不再贴出。
+
+# 效果
+这个开源控件的基本原理也就这些了，你可以在我的[github](https://github.com/SergioChan/SCCatWaitingHUD)上clone下源代码来阅读 :-) ，如果你有更好的建议或者想法也欢迎随时提PR。
