@@ -189,4 +189,13 @@ CA_EXTERN NSString * const kCAMediaTimingFunctionEaseInEaseOut
 在横屏切换的回调里，我记录了前一个屏幕状态，获取到当前屏幕状态，然后做了一个旋转的变换，这样整个HUD就会随着屏幕方向的变化而变化了。详细的实现可以直接看源代码，这里就不再贴出。
 
 # 效果
-这个开源控件的基本原理也就这些了，你可以在我的[github](https://github.com/SergioChan/SCCatWaitingHUD)上clone下源代码来阅读 :-) ，如果你有更好的建议或者想法也欢迎随时提PR。
+这个开源控件的基本原理也就这些了，你可以在我的[github](https://github.com/SergioChan/SCCatWaitingHUD)上clone下源代码来阅读 :-) ，如果你有更好的建议或者想法也欢迎随时提PR。  
+
+# 其他资源  
+文章内文件提供公共下载  
+配图所用Sketch文件：[下载链接](/files/2015/11/SCCatWaitingHUD/MAO.sketch)
+
+# 作者
+Sergio Chan  
+Github : [https://github.com/SergioChan](https://github.com/SergioChan)  
+Weibo : [http://weibo.com/sergiochan](http://weibo.com/sergiochan)  

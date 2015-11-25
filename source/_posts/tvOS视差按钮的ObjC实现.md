@@ -618,7 +618,13 @@ Have Fun :-)
 
 以外 这篇文章里所有文件都是提供公共下载的   
 配图所用Sketch文件：[下载链接](/files/2015/11/tvOS/tvOS_Sketch.sketch)
-三维模型文件（进入点击Download）：[下载链接](https://sketchfab.com/models/899bdd009cc64af0b2260fe7570a0510)
+三维模型文件（进入点击Download）：[下载链接](https://sketchfab.com/models/899bdd009cc64af0b2260fe7570a0510)  
+
+# 作者
+JustZht  
+Github : [https://github.com/JustinFincher](https://github.com/JustinFincher)  
+Weibo : [http://weibo.com/justzht](http://weibo.com/justzht)  
+
 
 [1]:	https://developer.apple.com/tvos/human-interface-guidelines/icons-and-images/
 [2]:	/files/2015/11/tvOS/tvOS-Gear.zip
