@@ -46,7 +46,9 @@ UIWindow 是每一个程序都必须创建的根视图，它是UIView的子类�
 
 在SCCatWaitingHUD中，由于需要存在一个不干扰原有程序代码逻辑和视图逻辑的View，因此最合适的办法就是声明一个独立的Window。HUD的这种使用模式可以参考MBProgressHUD，开发者可以在全局任意的地方调用HUD的显示，由于HUD所在的Window和系统原本的Window相比level更高，所以可以在不影响原有视图的情况下在任意页面显示。
 
-UIWindow的结构如下，我们可以看到UIWindow本身就是一个UIView，有一个名为rootViewController的属性，而这个属性就是这个window将会呈现的controller对象。
+UIWindow的结构如下，我们可以看到UIWindow本身就是一个UIView。每个UIWindow都会有一个名为rootViewController的属性，而这个属性就是这个window将会呈现的controller对象。
+
+![](/img/2015/11/SCCatWaitingHUD/window.png)
 
 Xcode7之后，苹果要求所有的UIWindow在声明的时候都需要有一个rootViewController，即通过代码声明的时候，需要定义一个rootViewController，然后在这个controller之上添加要显示的内容。但是经过验证，在程序运行中创建的非根Window的UIWindow，可以直接当做UIView来使用，仍然不需要强制给一个rootViewController。```
 self.backgroundWindow = [[UIWindow alloc]initWithFrame:self.frame];
@@ -179,7 +181,17 @@ CA_EXTERN NSString * const kCAMediaTimingFunctionEaseInEaseOut
 
 ## 最后是一点对横屏的支持
 
-由于我们实现的是一个独立的UIWindow，所以不能通过controller的几个涉及到屏幕旋转的回调来获得屏幕方向的变化。屏幕方向的旋转只会自动这时候我们就要通过监听系统的一个广播消息来获取屏幕状态的变化。
+由于我们实现的是一个独立的UIWindow，没有添加ViewController，所以**不能**通过ViewController下面几个涉及到屏幕旋转的回调来获得屏幕方向的变化。
+
+```
+// New Autorotation support.
+- (BOOL)shouldAutorotate NS_AVAILABLE_IOS(6_0) __TVOS_PROHIBITED;
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations NS_AVAILABLE_IOS(6_0) __TVOS_PROHIBITED;
+// Returns interface orientation masks.
+- (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation NS_AVAILABLE_IOS(6_0) __TVOS_PROHIBITED;
+```
+
+这时候我们就要通过监听系统的一个广播消息来获取屏幕状态的变化。
 
 ```
 [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusBarOrientationChange:)  name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
