@@ -53,7 +53,7 @@ raf(animate)
 
 ### 实现缓动效果
 
-缓动效果可以让你的动画更柔和自然，[easings.net](http://easings.net/)上可以看到已经命名的缓动函数，其实质就是把一个 0 到 1 之间的值进行转化。 [component/ease](https://github.com/component/ease/blob/master/index.js) 是一个实现了缓动函数的 javascript 库，我们拿它的一个函数 `inQuad` 举例：
+缓动效果可以让你的动画更柔和自然，[easings.net](http://easings.net/zh-cn)上可以看到已经命名的缓动函数，其实质就是把一个 0 到 1 之间的值进行转化。 [component/ease](https://github.com/component/ease/blob/master/index.js) 是一个实现了缓动函数的 javascript 库，我们拿它的一个函数 `inQuad` 举例：
 
 ``` js
 function inQuad(n){
@@ -157,6 +157,8 @@ View.prototype.animate = function () {
     // raf 调用的绘制主进程
     function step(timestamp) {
       // transform 重置
+      // 因为使用了 https://github.com/component/autoscale-canvas/blob/master/index.js 通过 scale 支持 Retina，
+      // 所以这里不能简单的把 scale 设为 1
       self.ctx.setTransform(window.devicePixelRatio || 1 ,0 ,0 ,window.devicePixelRatio || 1 ,0, 0);
       // 清空画布
       self.ctx.clearRect(0, 0, self.width, self.height)
