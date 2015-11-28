@@ -7,7 +7,9 @@ categories:
 - 代码
 
 ---
-# Epic-Black-Friday-Deals 效果的前端技术实现
+# 介绍
+
+这是一个通过 web 技术实现的效果演示 demo 。
 
 原设计链接： [Epic-Black-Friday-Deals](https://dribbble.com/shots/2372734-Epic-Black-Friday-Deals)
 
@@ -16,6 +18,8 @@ categories:
 <img width="400px" height="300px" src="https://d13yacurqjgara.cloudfront.net/users/107759/screenshots/2372734/ink2.gif" alt="Ink2">
 
 Demo 链接： https://chemzqm.github.io/dribbble-effects/friday.html
+
+注：使用 safari 保存到桌面浏览效果更佳。
 
 整个效果分为两个部分实现，上半部分通过 canvas 不断绘制实现，下半部分使用了 css 的 transform 和 transition 来实现。 下面是详细介绍。
 
