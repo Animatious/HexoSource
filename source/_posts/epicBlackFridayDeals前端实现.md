@@ -1,3 +1,12 @@
+title: Epic-Black-Friday-Deals 效果的前端技术实现
+date: 2015-11-28 21:25:40
+tags:
+- canvas
+- web
+categories:
+- 代码
+
+---
 # Epic-Black-Friday-Deals 效果的前端技术实现
 
 原设计链接： [Epic-Black-Friday-Deals](https://dribbble.com/shots/2372734-Epic-Black-Friday-Deals)
